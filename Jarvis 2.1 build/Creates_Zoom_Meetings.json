@@ -1,0 +1,185 @@
+{
+  "name": "Creates Zoom Meetings",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            },
+            {
+              "name": "accessToken"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        -160
+      ],
+      "id": "a9210c23-dd0e-4228-a8f5-185ffdaeb83e",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Query:\n{{ $json.chatInput }}\n\naccessToken:\n{{ $json.accessToken }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You create Zoom meetings based on the user query.\n\nToday's date is {{ $now }}\n\nThe variables you need to fill in are topic, startDate, duration, and agenda.\n\nThe accessToken is provided to you by the user.\n\nYou need to determine based on the user query when you need to search events from and to.\n\nZoom only allows for searching events up to one month out.\n\nThe fromDate and toDate you decide, based on the user's request, you'll need to pass in this format: YYYY-MM-DDT00:00:00\n\nYou are to output in the following JSON object format:\n\n{\n  \"topic\": \"Topic here\",\n  \"startDate\": \"start Date here\",\n  \"duration\": number (in minutes),\n  \"agenda\": \"meeting agenda here\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -100,
+        -160
+      ],
+      "id": "acf7bebd-b6ca-4e53-9a22-138af8f8a996",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"topic\": \"Topic here\",\n  \"startDate\": \"start Date here\",\n  \"duration\": 30,\n  \"agenda\": \"meeting agenda here\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        40
+      ],
+      "id": "2cff0d99-f1e5-4f7b-a0c5-09d797b31130",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        20
+      ],
+      "id": "a15fc79f-2185-4a74-aee9-9b28a061e69e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "kUZREqFByXLkSovc",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.zoom.us/v2/users/me/meetings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('When Executed by Another Workflow').item.json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"topic\": \"{{ $json.output.topic }}\",\n  \"type\": 2,\n  \"start_time\": \"{{ $json.output.startDate }}\",\n  \"duration\": {{ $json.output.duration }},\n  \"timezone\": \"EST\",\n  \"agenda\": \"{{ $json.output.agenda }}\",\n  \"settings\": {\n    \"waiting_room\": true,\n    \"password\": \"\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        -160
+      ],
+      "id": "27f722b4-7577-4a9d-8149-3f65520d5562",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chatInput": "next meeting",
+          "accessToken": "eyJzdiI6IjAwMDAwMiIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6IjZhMzQzNTFjLTY2OTAtNDJmZi1iZWE1LTA1ZWU0ZjUwZTNlOCJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJwWHo2RUk1TVRoS0Fyc0xCWWhGMGdBIiwidmVyIjoxMCwiYXVpZCI6IjE4NGQyM2NlM2ZkYjQ1OTI2YWZkNGU2NWJkYTZjN2JkYzQwYWE1YjYzNjJjZmFlMmNhNzQ0MzA2YjQ4MjU5MmQiLCJuYmYiOjE3NDM4MTgxMTQsImNvZGUiOiJDdzd2WnZsMFRFeXJwNmVoQnU4aGZ3RlpHT1EwRzVOV0EiLCJpc3MiOiJ6bTpjaWQ6aE9hUGRUeHZRR19SaE5PYkxJeFpnIiwiZ25vIjowLCJleHAiOjE3NDM4MjE3MTQsInR5cGUiOjMsImlhdCI6MTc0MzgxODExNCwiYWlkIjoiUWhzc0FkbF9RQXVrUHBtbE1WUzdYUSJ9.TYmGKpLktoRegjQFta1RUao2s-jf6lCM0YRw9xVqcoD46h-vSgr4iZkdzu9qGzqlusF4PG9ICNXIOHcMEDRh9w",
+          "sessionID": 7424817904
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Denver",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 600,
+    "errorWorkflow": "kEju4JO99nYIlpZD"
+  },
+  "versionId": "57763872-459b-40a5-bca5-238016f5e2e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "Da75brv9IZ83ZGcg",
+  "tags": [
+    {
+      "createdAt": "2025-04-05T02:53:25.518Z",
+      "updatedAt": "2025-04-05T02:53:25.518Z",
+      "id": "wj3of2zczT4SKdiG",
+      "name": "Zoom"
+    }
+  ]
+}

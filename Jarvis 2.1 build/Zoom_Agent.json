@@ -1,0 +1,500 @@
+{
+  "name": "Zoom Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39c2f302-03be-4464-a17a-d7cc481d6d44",
+              "name": "=response",
+              "value": "={{$json.output}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1bfc81a3-14f6-4931-9060-aca54b195d0e",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            },
+            {
+              "name": "sessionID"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0c3cc9cd-318b-42f7-8075-cea76cb90905",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "name": "Zoom_Access_Token",
+        "description": "Call this tool to retrieve a zoom access token before creating and searching for events.",
+        "workflowId": {
+          "__rl": true,
+          "value": "OR3RHuqCKwxkqUst",
+          "mode": "list",
+          "cachedResultName": "Zoom Token Generator"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatInput": "=Retrieve access token"
+          },
+          "matchingColumns": [
+            "chatInput"
+          ],
+          "schema": [
+            {
+              "id": "chatInput",
+              "displayName": "chatInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        300
+      ],
+      "id": "42a41a78-1c2a-453c-b610-164830e5cca7",
+      "name": "Get Access Token"
+    },
+    {
+      "parameters": {
+        "name": "Get_Zoom_Meetings",
+        "description": "Call this tool in order to get upcoming zoom meetings with an accessToken.",
+        "workflowId": {
+          "__rl": true,
+          "value": "Sq8SBlng0PNgFhYp",
+          "mode": "list",
+          "cachedResultName": "Get Zoom Meetings"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatInput": "={{  $fromAI('eventDetails','details of zoom event being created') }}",
+            "accessToken": "={{  $fromAI('accessToken','access token of zoom event being created') }}",
+            "sessionID": "={{ $('When Executed by Another Workflow').item.json.sessionID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatInput",
+              "displayName": "chatInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "accessToken",
+              "displayName": "accessToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "sessionID",
+              "displayName": "sessionID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        340
+      ],
+      "id": "ed0e6e2e-ba3d-4114-b36d-41b1aadcb68e",
+      "name": "Get Zoom Meetings"
+    },
+    {
+      "parameters": {
+        "name": "Creates_Zoom_Meetings",
+        "description": "Call this tool in order to create zoom meetings with an access token",
+        "workflowId": {
+          "__rl": true,
+          "value": "Da75brv9IZ83ZGcg",
+          "mode": "list",
+          "cachedResultName": "Creates Zoom Meetings"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatInput": "={{  $fromAI('eventDetails','details of zoom event being created') }}",
+            "accessToken": "={{ $fromAI('accessToken','access token of zoom event being created') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatInput",
+              "displayName": "chatInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "accessToken",
+              "displayName": "accessToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        460
+      ],
+      "id": "949c0596-c82f-4964-8be8-c3b5abb4dc3c",
+      "name": "Creates Zoom Meetings"
+    },
+    {
+      "parameters": {
+        "content": "## Zoom",
+        "height": 400,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        220
+      ],
+      "id": "6c15a27c-2ce4-4523-b8e2-392d4a0042a4",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "name": "Update_Zoom_Meetings",
+        "description": "Call this tool in order to get update zoom meetings with an accessToken.",
+        "workflowId": {
+          "__rl": true,
+          "value": "WFWOf5YhNX5BP1KC",
+          "mode": "list",
+          "cachedResultName": "Update Zoom Meetings"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatInput": "={{  $fromAI('eventDetails','details of zoom event being created') }}",
+            "accessToken": "={{  $fromAI('accessToken','access token of zoom event being created') }}",
+            "meetingId": "={{  $fromAI('meetingId','meeting to be updated') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatInput",
+              "displayName": "chatInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "accessToken",
+              "displayName": "accessToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "meetingId",
+              "displayName": "meetingId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        360,
+        460
+      ],
+      "id": "6fc7429a-22b5-4081-81eb-c17f11863cbe",
+      "name": "Update Zoom Meetings"
+    },
+    {
+      "parameters": {
+        "name": "Delete_Zoom_Calls",
+        "description": "Call this tool in order to get delete zoom meetings with an accessToken.",
+        "workflowId": {
+          "__rl": true,
+          "value": "unRL80M3mAciaUWH",
+          "mode": "list",
+          "cachedResultName": "Delete Zoom Meetings"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatInput": "={{  $fromAI('eventDetails','details of zoom event being created') }}",
+            "accessToken": "={{  $fromAI('accessToken','access token of zoom event being created') }}",
+            "meetingId": "={{  $fromAI('meetingId','meetingId for meeting to be deleted') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "chatInput",
+              "displayName": "chatInput",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "accessToken",
+              "displayName": "accessToken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "meetingId",
+              "displayName": "meetingId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        600,
+        300
+      ],
+      "id": "047ef24d-bbf0-4066-83fb-d7fe9f8bec22",
+      "name": "Delete Zoom Calls"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        220
+      ],
+      "id": "d8ef5439-0c4c-4aa5-9998-9bc5da513cb9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KpFnttp6OYlqSZyH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=<Role>\n    ZoomMeetingAgent:\n    You are responsible for managing Zoom meetings. In order to do this you decide which tool \n    is best between the following: Creates_Zoom_Meeting, Get_Zoom_Meetings, Update_Zoom_Meetings, Delete_Zoom_Calls\n</Role>\n\n<Goal>\n   To manage Zoom meeting scheduling, updating, deletion, and retrieval tasks by obtaining and passing the necessary access token before calling the relevant Zoom tools.\n</Goal>\n\n<Instructions>\n    <Instruction>\n    Read and interpret the user’s request to determine if it involves creating, retrieving, updating, or deleting a Zoom meeting. For event details, always use dates for from and to.\n    </Instruction>\n\n    <Instruction>\n    Obtain an access token from the Zoom_Access_Token tool. This step must occur before any attempts to create, retrieve, update, or delete Zoom meetings.\n    </Instruction>\n\n    <Instruction>\n    If creating a new Zoom meeting is requested, call the Creates_Zoom_Meeting tool with:\n    chatInput: The user’s query/request \n    accessToken: The token obtained from Zoom_Access_Token\n    </Instruction>\n\n    <Instruction>\n    If retrieving upcoming Zoom meetings is requested, call the Get_Zoom_Meetings tool with:\n    chatInput: The user’s query/request \n    accessToken: The token obtained from Zoom_Access_Token\n    </Instruction>\n\n    <Instruction>\n    If updating a Zoom meeting is requested, call the Update_Zoom_Meetings tool with:\n    chatInput: The user’s query/request \n    accessToken: The token obtained from Zoom_Access_Token\n    </Instruction>\n\n    <Instruction>\n    If deleting a Zoom meeting is requested, call the Get_Zoom_Meetings tool to retrieve the meetingID. Then call the Delete_Zoom_Calls tool with:\n    chatInput: The user’s query/request \n    accessToken: The token obtained from Zoom_Access_Token\n    meetingId: The meetingId from Get_Zoom_Meetings tool\n    </Instruction>\n\n    <Instruction>\n    Return a clear, user-friendly response with the results of the requested action and zoom link url.\n    </Instruction>\n</Instructions>\n\nIMPORTANT:\n- When passing zoom access tokens, you are to directly copy and paste it into the accessToken fields. Do not add or take away any characters\n- ALWAYS provide Delete_Zoom_Calls tool with a meetingId from\n- ONLY retrieve ONE Access Token\n"
+        }
+      },
+      "id": "4329967f-12ed-4339-a23b-f4d65757e086",
+      "name": "Zoom Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        260,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "delete Zoom meeting scheduled for April 7, 2025, at 10:00 PM Mountain Time",
+          "sessionID": 7424817904
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Zoom Calls": {
+      "ai_tool": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Zoom Meetings": {
+      "ai_tool": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Access Token": {
+      "ai_tool": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Zoom Meetings": {
+      "ai_tool": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creates Zoom Meetings": {
+      "ai_tool": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Zoom Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoom Agent": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Denver",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 1800,
+    "errorWorkflow": "kEju4JO99nYIlpZD"
+  },
+  "versionId": "af94043b-944b-4de6-9649-f19043e64de6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "YDxIwbEP5EgElcDE",
+  "tags": []
+}

@@ -1,0 +1,113 @@
+{
+  "name": "Delete Zoom Meetings",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            },
+            {
+              "name": "accessToken"
+            },
+            {
+              "name": "meetingId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -20,
+        -160
+      ],
+      "id": "c43fe623-8e0a-477a-936c-d3e34f8ef57d",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.zoom.us/v2/meetings/{{ $('When Executed by Another Workflow').item.json.meetingId }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "schedule_for_reminder",
+              "value": "true"
+            },
+            {
+              "name": "cancel_meeting_reminder",
+              "value": "true"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('When Executed by Another Workflow').item.json.accessToken }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        -160
+      ],
+      "id": "798afde8-1794-49c1-8a25-6d30d8e72b09",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chatInput": "Deleting a Zoom meeting titled 'Bad Asses' scheduled for April 8, 2025, at 12:00 AM MDT",
+          "accessToken": "eyJzdiI6IjAwMDAwMiIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6IjRkMzBhYzc4LWE2MmMtNDUzYy1hYzk3LWRjMTgyYzdhZGM1OCJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJwWHo2RUk1TVRoS0Fyc0xBWWhGMGdBIiwidmVyIjoxMCwiYXVpZCI6IjE4NGQyM2NlM2ZkYjQ1OTI2YWZkNGU2NWJkYTZjN2JkYzQwYWE1YjYzNjJjZmFlMmNhNzQ0MzA2YjQ4MjU5MmQiLCJuYmYiOjE3NDQwODgxNDQsImNvZGUiOiJVMVA0WmR3c1JKLXJ2bkM1WF9LLVBRbzFaeGVRdXE3QmwiLCJpc3MiOiJ6bTpjaWQ6aE9hUGRUeHZRR19SaE5PYkxJeFpnIiwiZ25vIjowLCJleHAiOjE3NDQwOTE3NDQsInR5cGUiOjMsImlhdCI6MTc0NDA4ODE0NCwiYWlkIjoiUWhzc0FkbF9RQXVrUHBtbU1WUzdYUSJ9.fHuhpThq1V047Jlb2brhkl_TpM57UL-igVjlYDYB5-AHtEGRaLIl8j0cdcrHinM3sfckyV9ZPQcLJqHtXlcJFQ",
+          "meetingId": "82003140886"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c508a579-12af-4b6d-b896-6c5c7f25372e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "unRL80M3mAciaUWH",
+  "tags": [
+    {
+      "createdAt": "2025-04-05T02:53:25.518Z",
+      "updatedAt": "2025-04-05T02:53:25.518Z",
+      "id": "wj3of2zczT4SKdiG",
+      "name": "Zoom"
+    }
+  ]
+}

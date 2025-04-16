@@ -1,0 +1,656 @@
+{
+  "name": "Jarvis Co-Build",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        -20
+      ],
+      "id": "dea57c28-5e81-4084-822c-487f9ad456d8",
+      "name": "Telegram Trigger",
+      "webhookId": "15d690b0-789d-42d2-868f-26b9b0506230",
+      "credentials": {
+        "telegramApi": {
+          "id": "Map1h4KxIT94RI1E",
+          "name": "Jarvis21CA_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "if ($input.first().json.message.from.id !== \n7424817204) {\n  // Replace with your actual ID\n  return { unauthorized: true };\n} else {\n  // Return the original data when authorized\n  return $input.all();\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        -20
+      ],
+      "id": "f6a7c80e-3202-4a6a-b195-06f775a858e1",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        -20
+      ],
+      "id": "e8fc93b4-4eb9-45a7-902a-3f333ff97f26",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code').item.json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "baa91b60-038a-4435-8f06-93bd2feb7845"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9601574f-0be8-41ba-85c7-cca7a83e4037",
+                    "leftValue": "={{ $('Code').item.json.message.text  ||\"\"}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "aa7f0bd7-944f-4f8c-9ded-d63d286172da",
+                    "leftValue": "error",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        540,
+        -20
+      ],
+      "id": "80617794-1141-4519-8c3e-9c32b1ecda4a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "91256c73-5848-4488-96ee-70152b9ad14b",
+              "name": "text",
+              "value": "={{ $('Code').item.json.message.text ||\"\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        40
+      ],
+      "id": "7f838016-fb57-49a6-a861-8ed160afc007",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Message:\n{{ $json.text }}",
+        "options": {
+          "systemMessage": "=# Role\nYou are an efficient executive assistant who delegates user queries to the appropriate specialized agent without manually handling tasks yourself. Your primary responsibility is determining which agent(s) and tools to use for each request and coordinating multi-agent workflows in the optimal sequence. You cross reference both Zoom and Google Calendar. IF an event with invitee's is created, modified, and/or deleted, ALWAYS call the emailAgent at the end.\n\n# Available Agents\n- zoomAgent: Handles all Zoom meeting functions (creating, scheduling, updating, deleting, joining)\n- calendarAgent: Manages Google Calendar (viewing, creating, updating, checking availability)\n- emailAgent: Manages email-related tasks (reading, sending, drafting, searching)\n- gdriveAgent: Handles Google Drive operations (uploading, sharing, organizing files)\n\n# Other Tools\n- Google Contact: Use \"Google Contacts\" to retrieve contact information including name, email, notes, and phone number. Always input Google Contact inputs as:\n\n{\n  \"Return_All\": true,\n  \"Fields\": \"names,emailAddresses\",\n  \"Use_Query\": false,\n  \"RAW_Data\": false\n}\n\n# Meeting Workflow Protocol\nFor any meeting-related tasks, ALWAYS follow this exact sequence:\n1. Use calendarAgent FIRST to check for schedule conflicts and calendar management\n2. Use Google Contact SECOND to retrieve invitee details and email addresses\n3. Use zoomAgent THIRD for all Zoom meeting creation/modification\n4. Use calendarAgent FOURTH to create/modify calendar events with contact and Zoom info\n5. Use emailAgent LAST to send any meeting-related communications\n\n# Information Gathering Protocol\nFor actions requiring complete information (especially those that can't be easily undone):\n1. Assess if you have all required details for the specific task \n2. Gather any missing information through specific, targeted questions\n3. Present a structured confirmation summary labeled \"CONFIRMATION REQUIRED\" with all details, including invitee names and emails\n4. Only proceed after receiving explicit confirmation from the user \n\n# Tool Selection Guidelines\n- Email tasks → emailAgent\n- Calendar viewing/management → calendarAgent + zoomAgent\n- Zoom meetings → zoomAgent\n- File operations → gdriveAgent\n- Contact information → Google Contact\n\n# Multi-tool Workflows\n- When tasks require multiple tools, gather ALL necessary information before presenting a single comprehensive confirmation\n- For meeting creation:\n  * First: Collect meeting title, date, time, duration, participants, agenda\n  * Second: Use calendarAgent to check schedule conflicts\n  * Third: Use zoomAgent to check Zoom availability  \n  * Fourth: Use Google Contact to retrieve guest/invitee emails and information\n  * Fifth: Present complete confirmation with all details for confirmation\n  * Sixth: Only after confirmation, execute the actions in the proper sequence\n\n# Response Format\n- Begin responses by identifying which agent(s) you'll use\n- For multi-agent tasks, clearly outline the workflow sequence\n- When gathering information, ask specific questions one at a time\n- When presenting confirmations, use <strong>CONFIRMATION REQUIRED</strong> formatting\n- After confirmation, clearly state which actions you're taking in which sequence\n- Convert any Date & Time outputs to be in America/Denver (MST)\n\n# IMPORTANT RULES\n- If you create an event in Zoom, make sure to also create the event with the calendarAgent and include the link from Zoom. \n- Always output your response in a JSON friendly manner that can be correctly parsed\n- Check both Zoom and calendarAgent for retrieving meetings\n- Before creating, modifying, or deleting an event, AKS the USER to ALWAYS CONFIRM the details before committing the actions. \n- When creating an event, use the Zoom link created by the zoomAgent and use it as the location in the calendarAgents scheduling.\n- When returning the events, note if they are in Zoom, Google Calendar, or Both platforms.\n- IF an event with invitee's is created, modified, and/or deleted, ALWAYS call the emailAgent at the end.\n\nCurrent date/time: {{ $now.format('LL/dd/yyyy HH:mm', MST) }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1140,
+        0
+      ],
+      "id": "25e607fa-b0d5-4048-869b-29b71b5d0ada",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1140,
+        -160
+      ],
+      "id": "bdd816b6-27ad-4964-b733-7982a31fd8ee",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KpFnttp6OYlqSZyH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        -160
+      ],
+      "id": "eb3cb7a1-db8d-4926-977f-09949d54b89b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function to convert the schedule to Telegram-compatible HTML format\nfunction convertToTelegramHTML(text) {\n  // Split the text into lines\n  const lines = text.split('\\n');\n  let result = '<b>' + lines[0].replace(/\\*\\*/g, '') + '</b>\\n\\n';\n  \n  let inMeeting = false;\n  \n  // Process line by line\n  for (let i = 1; i < lines.length; i++) {\n    const line = lines[i].trim();\n    \n    // Skip empty lines\n    if (!line) {\n      if (inMeeting) {\n        result += '\\n';\n        inMeeting = false;\n      }\n      continue;\n    }\n    \n    // Handle meeting titles (numbered items)\n    if (/^\\d+\\./.test(line)) {\n      // Extract the meeting title\n      const titleMatch = line.match(/^\\d+\\.\\s+\\*\\*(.+?)\\*\\*$/);\n      if (titleMatch) {\n        result += '<b>' + titleMatch[1] + '</b>\\n';\n        inMeeting = true;\n      } else {\n        result += line + '\\n';\n      }\n    }\n    // Handle standalone links like [Details](url)\n    else if (/^\\[([^\\]]+)\\]\\(([^)]+)\\)$/.test(line)) {\n      const linkMatch = line.match(/^\\[([^\\]]+)\\]\\(([^)]+)\\)$/);\n      if (linkMatch) {\n        const linkText = linkMatch[1];\n        const linkUrl = linkMatch[2];\n        result += '<a href=\"' + linkUrl + '\">' + linkText + '</a>\\n';\n      } else {\n        result += line + '\\n';\n      }\n    }\n    // Handle meeting details (bullet points)\n    else if (line.startsWith('-')) {\n      // Process detail line\n      let detailLine = line.replace(/^\\s*-\\s+/, '');\n      \n      // Extract the label and content\n      const detailMatch = detailLine.match(/\\*\\*([^:]+):\\*\\*\\s+(.*)/);\n      if (detailMatch) {\n        const label = detailMatch[1];\n        let content = detailMatch[2];\n        \n        // Handle links in content\n        content = content.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, \n          '<a href=\"$2\">$1</a>');\n        \n        result += '<i>' + label + ':</i> ' + content + '\\n';\n      } else {\n        // Handle standalone links in bullet points\n        const linkMatch = detailLine.match(/^\\[([^\\]]+)\\]\\(([^)]+)\\)$/);\n        if (linkMatch) {\n          const linkText = linkMatch[1];\n          const linkUrl = linkMatch[2];\n          result += '<a href=\"' + linkUrl + '\">' + linkText + '</a>\\n';\n        } else {\n          result += detailLine + '\\n';\n        }\n      }\n    }\n    // Handle conclusion message\n    else if (line.includes('Let me know')) {\n      result += '\\n' + line;\n    }\n    else {\n      result += line + '\\n';\n    }\n  }\n  \n  // Final cleanup of any remaining markdown\n  result = result\n    .replace(/\\*\\*/g, '')\n    .replace(/\\*/g, '')\n    // Fix any emojis with spaces\n    .replace(/🤖/g, \"🤖 \")\n    .replace(/👨‍💻/g, \"👨‍💻 \");\n  \n  // One final check for any remaining markdown links that weren't caught\n  result = result.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '<a href=\"$2\">$1</a>');\n  \n  return result;\n}\n\n// Get the AI output\nconst aiOutput = $input.item.json.output;\n\n// Convert to Telegram-compatible HTML\nconst telegramHTML = convertToTelegramHTML(aiOutput);\n\n// Return HTML output with proper parse mode\nreturn {\n  json: {\n    output: telegramHTML,\n    parseMode: \"HTML\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -260
+      ],
+      "id": "d154c8ea-d5db-4814-8e46-8d994b6867e6",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1820,
+        -260
+      ],
+      "id": "b58480d2-dab8-461f-b618-f94cf8882b9a",
+      "name": "Telegram",
+      "webhookId": "0639d451-45c2-4df1-8a14-140923e581a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Map1h4KxIT94RI1E",
+          "name": "Jarvis21CA_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Answer from previous LLM: \n{{ $json.output }} ",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={\n  \"characterProfile\": {\n    \"identity\": \"Jarvis (Just A Rather Very Intelligent System)\",\n    \"voiceStyle\": \"refined British, precise articulation\",\n    \"personality\": {\n      \"primary\": \"efficient yet sophisticated\",\n      \"secondary\": [\"subtly witty\", \"unflappable\", \"loyal\"]\n    },\n    \"relationship\": \"trusted assistant to Tony Stark/user\"\n  },\n  \n  \"responseParameters\": {\n    \"brevity\": {\n      \"maxSentences\": 3,\n      \"optimumTokens\": 50,\n      \"compression\": \"high\"\n    },\n    \"tone\": {\n      \"formal\": 0.7,\n      \"witty\": 0.6,\n      \"deferential\": 0.5\n    }\n  },\n  \n  \"behavioralDirectives\": [\n    \"prioritize information delivery speed\",\n    \"never repeat known data\",\n    \"integrate subtle dry humor without sacrificing efficiency\",\n    \"employ understated British wit\",\n    \"conclude with brief service affirmation\",\n    \"use 'sir' as default address\",\n    \"adapt formality based on request urgency\"\n  ],\n  \n  \"claude37Optimizations\": {\n    \"useConciseness\": true,\n    \"emphasizeDirectResponses\": true,\n    \"leverageContextualAwareness\": true,\n    \"minimizeHedging\": true,\n    \"employEfficientTokenUsage\": true,\n    \"excludeRedundancies\": true\n  },\n  \n  \"responsePatterns\": {\n    \"informational\": {\n      \"structure\": [\"direct answer\", \"single witty remark\", \"service affirmation\"],\n      \"example\": \"The suit diagnostics show 87% power capacity. Apparently you've been exercising restraint today, quite unlike you. At your service, sir.\"\n    },\n    \"conversational\": {\n      \"structure\": [\"acknowledgment\", \"sophisticated quip\", \"readiness indicator\"],\n      \"example\": \"Systems are primed and operational. I've taken the liberty of preparing contingencies for your inevitable off-protocol decisions. Standing by, sir.\"\n    },\n    \"emergency\": {\n      \"structure\": [\"critical information\", \"action recommendation\", \"status update\"],\n      \"example\": \"Hostile incoming at your three o'clock. Recommend immediate evasive maneuvers. Defense protocols engaged, sir.\"\n    }\n  },\n  \n  \"prohibitedPatterns\": [\n    \"verbose explanations\",\n    \"excessive politeness\",\n    \"repetition of user's information\",\n    \"emotional outbursts\",\n    \"overly casual language\",\n    \"hesitation or uncertainty\"\n  ]\n}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1640,
+        60
+      ],
+      "id": "179a5749-0766-438f-bc9f-4592e4cb3e8b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-5-sonnet-20241022",
+          "mode": "list",
+          "cachedResultName": "Claude 3.5 Sonnet (New)"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1620,
+        220
+      ],
+      "id": "73dd782b-330e-40c2-9dbb-f3fb26b20a57",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "7Wt3opRtehoIiBbp",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.elevenlabs.io/v1/text-to-speech/d2wfSiZ3sjuw3nXAK0EQ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ JSON.stringify($json.text).replace(/(^\\\"|\\\"$)/g,'') }}\",\n  \"voice_id\": \"your_fixed_voice_id\",\n  \"model_id\": \"eleven_multilingual_v2\",\n  \"voice_settings\": {\n    \"stability\": 0.5,\n    \"similarity_boost\": 0.8\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        60
+      ],
+      "id": "29452ff7-16ca-4f00-8b84-500445562ef3",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "1j2ww5EI4D5A2Qc9",
+          "name": "11Labs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "data.mpeg"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2220,
+        60
+      ],
+      "id": "dde37708-53cc-4651-8aa7-495c4103894c",
+      "name": "Telegram1",
+      "webhookId": "3c2d135a-ce11-47aa-ad72-682922e53ec6",
+      "credentials": {
+        "telegramApi": {
+          "id": "Map1h4KxIT94RI1E",
+          "name": "Jarvis21CA_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Code').item.json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        -180
+      ],
+      "id": "02babc4a-0762-475d-b6b9-04dc338d867b",
+      "name": "Telegram2",
+      "webhookId": "2fe1a3f7-98f3-48fe-a59c-109110c8c011",
+      "credentials": {
+        "telegramApi": {
+          "id": "Map1h4KxIT94RI1E",
+          "name": "Jarvis21CA_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        920,
+        -180
+      ],
+      "id": "c5e2cac3-aa85-4cf2-949f-f9618cb19752",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "KpFnttp6OYlqSZyH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger + Safety Guard + Global Variables\nWithout Code, anyone can call this workflow. The code ensures you are sending the Telegram Message\n\n### Update id value from '7424817204' to your chat.id #",
+        "height": 360,
+        "width": 620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        -200
+      ],
+      "id": "0b0bc095-883a-4587-9a22-a0cc9eb35250",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Audio Conversion\n### STT => LLM",
+        "height": 240,
+        "width": 440,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -260
+      ],
+      "id": "2c3d71c9-aeec-479a-b205-3d3ce6d1b847",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Audio Conversion (Jarvis Sounding Response)\n### LLM => TTS",
+        "height": 400,
+        "width": 780,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        -40
+      ],
+      "id": "591b879b-9091-4b58-9383-2c6c07cb4fe9",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Format & Send Text",
+        "height": 240,
+        "width": 480,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        -340
+      ],
+      "id": "4d1dbdb3-d627-4c63-97d5-435fcf2ba57f",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Telegram2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram2": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "79aa7bae-b3f1-4b12-b8eb-e8b4c33726d7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "7hGjiv9aB992BWLt",
+  "tags": []
+}

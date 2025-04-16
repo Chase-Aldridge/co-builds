@@ -1,0 +1,131 @@
+{
+  "name": "Zoom Token Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "54780c3f-31e0-432d-b7bd-5e6b0aa1bed3",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://zoom.us/oauth/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            },
+            {
+              "name": "Authorization",
+              "value": "Basic aE9hUGRUef19SaE5PYkxdafdOlp3eWJUNWRWN0tddd9NMnJkbkxtc1QwUVhNMjdlZ1NP"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "account_credentials"
+            },
+            {
+              "name": "account_id",
+              "value": "QhssAdl_QAukPpmlMVS7XQ"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b38c168a-dc86-48e3-bb9f-a83e50803b1b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ccaa4fd-29f1-4b9b-b21f-ed13501a04e3",
+              "name": "accessToken",
+              "value": "={{ $json.access_token }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        0
+      ],
+      "id": "c43e5e36-4551-441f-a6e2-cdfd01da34dd",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b35ab5ac-7c2c-4ec7-9ed8-9af130baa9bb",
+  "meta": {
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "OR3RHuqCKwxkqUst",
+  "tags": [
+    {
+      "createdAt": "2025-04-05T02:53:25.518Z",
+      "updatedAt": "2025-04-05T02:53:25.518Z",
+      "id": "wj3of2zczT4SKdiG",
+      "name": "Zoom"
+    }
+  ]
+}

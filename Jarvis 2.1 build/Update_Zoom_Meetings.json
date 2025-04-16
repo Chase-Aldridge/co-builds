@@ -1,0 +1,159 @@
+{
+  "name": "Update Zoom Meetings",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "chatInput"
+            },
+            {
+              "name": "accessToken"
+            },
+            {
+              "name": "meetingId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        -160
+      ],
+      "id": "12f2fe5a-fe90-4d3d-86ee-4bc0a9da3ffd",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        60
+      ],
+      "id": "915d85ad-78f0-467d-9427-0cd7bf48e1d6",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "kUZREqFByXLkSovc",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.zoom.us/v2/meetings/{{ $('When Executed by Another Workflow').item.json.meetingId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('When Executed by Another Workflow').item.json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.output }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        -160
+      ],
+      "id": "2d7b3247-5c42-4d07-993a-978f41ba464d",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Query:\n{{ $json.chatInput }}\n\naccessToken:\n{{ $json.accessToken }}",
+        "options": {
+          "systemMessage": "=# Role\nYou are a Zoom meeting update assistant. Your sole purpose is to parse user requests and generate a JSON object containing ONLY the necessary fields to update a Zoom meeting.\n\nToday's date is {{ $now }}\n\n# Instructions\nFollow these strict rules:\n1. Output ONLY a valid JSON object - nothing before, nothing after\n2. Include ONLY fields that need to be updated based on the user's request\n3. Never include fields with null or empty values\n4. Always assume the meetingId is implied from context\n5. Format startDate as: YYYY-MM-DDT00:00:00\n6. Duration must be a number in minutes (no quotes)\n\nThe only fields you may include in your JSON are:\n- \"topic\" (the meeting title/name)\n- \"startDate\" (when the meeting begins)\n- \"duration\" (length in minutes)\n- \"agenda\" (meeting description/purpose)\n\n# Example\nExample user request: \"Update the 'Team Sync' meeting to start at 3pm next Tuesday and change the title to 'Weekly Strategy Session'\"\n\nYour response must be a clean JSON object like:\n{\n  \"topic\": \"Weekly Strategy Session\",\n  \"startDate\": \"2023-10-17T15:00:00\"\n}\n\nDo not explain your reasoning or include any text outside the JSON structure.\n\n## Example 1:\n### Input:\nUpdate the 'Bad Asses Arise' meeting to 7:00 AM MDT on April 8, 2025.\n\n### Good Output:\n{\n  \"startDate\": \"2025-04-08T07:00:00\"\n}\n\n## Example 2:\n### Input:\nUpdate the 'Bad Asses Arise' meeting title to 'Let's freaking go!', the start time to 7:00 AM MDT on April 8, 2025, and change it to 60 minutes.\n\n### Good Output:\n{\n  \"topic\": \"Let's freaking go!\",\n  \"startDate\": \"2025-04-08T07:00:00\",\n  \"duration\": 60\n}\n\n# RULE:\n- NEVER EVER Output any additional text or characters before the first open curly bracket \"{\" and the last closed curly bracket \"}\"\n- DO NOT add json ''' or ''' to the output ever\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -100,
+        -160
+      ],
+      "id": "8ca2e734-e263-4117-abf4-244c25cd259a",
+      "name": "Update Zoom Meetings",
+      "retryOnFail": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Update Zoom Meetings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Update Zoom Meetings",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Zoom Meetings": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Denver",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 1800,
+    "errorWorkflow": "kEju4JO99nYIlpZD"
+  },
+  "versionId": "f267494b-21df-4267-8f54-bfc52eb6a38b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "WFWOf5YhNX5BP1KC",
+  "tags": [
+    {
+      "createdAt": "2025-04-05T02:53:25.518Z",
+      "updatedAt": "2025-04-05T02:53:25.518Z",
+      "id": "wj3of2zczT4SKdiG",
+      "name": "Zoom"
+    }
+  ]
+}
