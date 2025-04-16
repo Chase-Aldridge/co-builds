@@ -1,5 +1,3 @@
-# co-builds
-
 # AI Workshop Co-builds
 
 Repository for AI workshop co-build materials, including N8n workflows and documentation.
