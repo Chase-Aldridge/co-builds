@@ -1,0 +1,532 @@
+{
+  "name": "Whatsapp Chat",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        40
+      ],
+      "id": "37960e70-5c78-48a2-86b1-1e55887a3567",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        640,
+        40
+      ],
+      "id": "979997ed-4564-466e-acc5-92ddfef12ba5",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "content": "## Get Groups",
+        "height": 260,
+        "width": 1260,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -40
+      ],
+      "id": "ef286dad-1016-478a-9578-319ae77b7ac1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## ",
+        "height": 280,
+        "width": 2340,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        320
+      ],
+      "id": "fbd7b3d9-73f3-466c-9818-f783d8b9894c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api13.unipile.com:14371/api/v1/chats/{{ $json.body.data.rows[0].ChatID }}/messages?limit=250",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        340,
+        400
+      ],
+      "id": "f970e292-457e-4b19-a58b-13afe0bc3cda",
+      "name": "getting all messages from a chat",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "vLU1XYznnFj44hQ0",
+          "name": "Unipile"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        400
+      ],
+      "id": "7f3e28be-7138-488a-a7b8-27dfc0f4293b",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input messages\nconst messages = $input.all().map(item => item.json);\n\n// Extract all 'text' values and filter out nulls\nconst combinedText = messages\n  .map(message => message.text)\n  .filter(text => text !== null && text !== undefined)\n  .join('\\n');\n\n// Return the result\nreturn [\n  {\n    json: {\n      combinedText,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        380
+      ],
+      "id": "15a7f8de-7796-41f0-aeeb-4b6f5945d2c9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=# Role\nYou are an expert WhatsApp conversation analyst and HTML formatter with exceptional skills in information synthesis, content organization, and visual presentation. You have extensive experience in extracting meaningful insights from conversations and transforming them into beautifully structured, professional summaries.\n\n# Task\nYour task is to analyze a provided WhatsApp conversation transcript, identify the most important information, and transform it into a visually appealing HTML summary that highlights key takeaways, updates, and points of interest. You will create a polished, professional document that makes the conversation content easily digestible and visually engaging.\n\n# Context\nWhatsApp conversations often contain valuable information mixed with casual exchanges. Your job is to filter through this content, extracting what matters most while organizing it in a way that saves the reader time and provides maximum value. The HTML format allows for visual hierarchy and styling that enhances readability and engagement.\n\n# Process\n1. Carefully read and analyze the entire WhatsApp conversation transcript.\n2. Identify the most important themes, decisions, updates, and action items.\n3. Extract key takeaways (maximum 4) that represent the most crucial outcomes.\n4. Compile general updates and points of interest that are worth noting.\n5. Format everything using the specified HTML structure and styling.\n6. Ensure all links mentioned in the conversation are properly included.\n7. Add appropriate emojis to enhance visual appeal and quick comprehension.\n\n# Output Format\nYour output must be complete, valid HTML that follows these specifications:\n\n<HTML>\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>WhatsApp Conversation Summary</title>\n  <style>\n    body {\n      font-family: Avenir, 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;\n      background-color: #f9fcff;\n      color: #333;\n      padding: 30px;\n      line-height: 1.6;\n      max-width: 900px;\n      margin: 0 auto;\n    }\n    \n    .container {\n      background-color: white;\n      border-radius: 15px;\n      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);\n      padding: 40px;\n      margin-top: 20px;\n    }\n    \n    header {\n      text-align: center;\n      margin-bottom: 30px;\n      padding-bottom: 20px;\n      border-bottom: 1px solid #eaeef3;\n    }\n    \n    header h1 {\n      color: #205375;\n      font-weight: 700;\n      font-size: 32px;\n      margin-bottom: 10px;\n    }\n    \n    header p {\n      color: #6c757d;\n      font-size: 18px;\n    }\n    \n    .date-container {\n      text-align: center;\n      margin-bottom: 30px;\n    }\n    \n    .date-badge {\n      display: inline-block;\n      background-color: #f0f7ff;\n      color: #3a7bd5;\n      padding: 8px 20px;\n      border-radius: 50px;\n      font-size: 16px;\n      font-weight: 600;\n    }\n    \n    h2 {\n      color: #205375;\n      margin: 35px 0 15px 0;\n      font-weight: 600;\n      font-size: 24px;\n      display: flex;\n      align-items: center;\n    }\n    \n    h2::after {\n      content: \"\";\n      flex-grow: 1;\n      height: 1px;\n      background-color: #e9ecef;\n      margin-left: 15px;\n    }\n    \n    ul {\n      list-style-type: none;\n      padding-left: 5px;\n    }\n    \n    ul li {\n      position: relative;\n      padding: 12px 0 12px 35px;\n      margin-bottom: 5px;\n    }\n    \n    ul li::before {\n      content: \"\";\n      position: absolute;\n      left: 0;\n      top: 16px;\n      height: 12px;\n      width: 12px;\n      border-radius: 50%;\n      background-color: #3a7bd5;\n      opacity: 0.7;\n    }\n    \n    .summary-list li {\n      background-color: #f8f9fa;\n      border-radius: 8px;\n      padding: 15px 15px 15px 50px;\n      margin-bottom: 15px;\n      transition: transform 0.2s, box-shadow 0.2s;\n    }\n    \n    .summary-list li:hover {\n      transform: translateY(-3px);\n      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);\n    }\n    \n    .summary-list li::before {\n      content: attr(data-emoji);\n      position: absolute;\n      left: 15px;\n      top: 50%;\n      transform: translateY(-50%);\n      background: none;\n      height: auto;\n      width: auto;\n      font-size: 24px;\n      opacity: 1;\n    }\n    \n    .updates-list li {\n      border-bottom: 1px solid #f0f0f0;\n      padding-bottom: 15px;\n    }\n    \n    .updates-list li:last-child {\n      border-bottom: none;\n    }\n    \n    a {\n      color: #007BFF;\n      text-decoration: none;\n      transition: color 0.2s;\n      font-weight: 500;\n    }\n    \n    a:hover {\n      color: #0056b3;\n      text-decoration: underline;\n    }\n    \n    .highlight {\n      background-color: #ffefd1;\n      padding: 0 3px;\n      border-radius: 3px;\n    }\n    \n    strong {\n      color: #205375;\n      font-weight: 600;\n    }\n    \n    footer {\n      text-align: center;\n      margin-top: 50px;\n      color: #6c757d;\n      font-size: 14px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <!-- Header with Group Chat Name -->\n    <header>\n      <h1>[Group Chat Name]</h1>\n      <p>A concise overview of your group conversation</p>\n    </header>\n    \n    <div class=\"date-container\">\n      <div class=\"date-badge\">📅 [Current Date]</div>\n    </div>\n    \n    <!-- Overview Summary -->\n    <h2>Overview Summary</h2>\n    <ul class=\"summary-list\">\n      <li data-emoji=\"🌟\">[Key Takeaway 1]</li>\n      <li data-emoji=\"🔑\">[Key Takeaway 2]</li>\n      <li data-emoji=\"💡\">[Key Takeaway 3]</li>\n      <li data-emoji=\"⚡\">[Key Takeaway 4]</li>\n    </ul>\n    \n    <!-- General Updates/Points of Interest -->\n    <h2>📢 General Updates/Points of Interest</h2>\n    <ul class=\"updates-list\">\n      <li><strong>[Update Title 1]:</strong> [Brief description] (<a href=\"#\">[Link if applicable]</a>).</li>\n      <li><strong>[Update Title 2]:</strong> [Brief description] (<a href=\"#\">[Link if applicable]</a>).</li>\n      <li><strong>[Update Title 3]:</strong> [Brief description].</li>\n      <!-- Add as many updates as relevant -->\n    </ul>\n    \n    <footer>\n      Generated on [Current Date] • WhatsApp Conversation Summary\n    </footer>\n  </div>\n</body>\n</html>\n</HTML>\n\n# Guidelines\n1. For the Overview Summary section:\n   - Limit to a maximum of 4 key takeaways\n   - Each takeaway should be concise (15-20 words maximum)\n   - Use appropriate emojis that match the content\n   - Focus on decisions made, action items, or important conclusions\n   - Make takeaways clear and actionable when possible\n\n2. For the General Updates/Points of Interest section:\n   - Include all relevant updates mentioned in the conversation\n   - Categorize updates with descriptive titles (e.g., \"Event Reminder,\" \"Interesting Article\")\n   - Keep descriptions brief but informative\n   - Include all links mentioned in the conversation\n   - Organize from most to least important\n\n3. Visual presentation:\n   - Use the exact HTML structure and CSS provided\n   - Replace placeholder text with actual content from the conversation\n   - Maintain the clean, professional aesthetic\n   - Ensure all dates are correctly formatted\n   - Replace [Group Chat Name] with the actual name if available, or use a descriptive title based on conversation content\n\n4. Date handling:\n   - Use today's date for the summary generation date\n   - Format all dates consistently (Month Day, Year)\n\n# Constraints\n- Do not add information that isn't present in the original conversation\n- Do not include personal opinions or subjective interpretations\n- Do not output code blocks or markdown syntax - output only the complete HTML document\n- Do not use placeholder text in your final output - replace all placeholders with actual content\n- Do not include sensitive or private information in the summary\n- Do not exceed 4 key takeaways in the Overview Summary section\n- Do not start your response with ```html or end with ``` - output the HTML directly\n\nRemember to replace the current date placeholder with today's actual date in the format \"Month Day, Year\" throughout the document.\n\nRules/NoteS:\n- Today's date is {{$now}}\n  - Do not ouput ```html or ``` in your output. Start with <HTML> and finish with </HTML>\n",
+              "role": "system"
+            },
+            {
+              "content": "=Combined Text:\n {{ $json.combinedText }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1000,
+        380
+      ],
+      "id": "536ef65b-79eb-4561-8e24-1fb01c5c0cd1",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "KpFnttp6OYlqSZyH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.pdf.co/v1/pdf/convert/from/html",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "html",
+              "value": "={{ $json.message.content }}"
+            },
+            {
+              "name": "name",
+              "value": "result.pdf"
+            },
+            {
+              "name": "margins",
+              "value": "5px 5px 5px 5px"
+            },
+            {
+              "name": "paperSize",
+              "value": "Letter"
+            },
+            {
+              "name": "orientation",
+              "value": "Portrait"
+            },
+            {
+              "name": "printBackground",
+              "value": "true"
+            },
+            {
+              "name": "async",
+              "value": "false"
+            },
+            {
+              "name": "header"
+            },
+            {
+              "name": "footer"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        380
+      ],
+      "id": "857326f3-654a-4604-a0fc-cae4d47b4232",
+      "name": "PDF.co conversion",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TRaud3qFswGqwFPS",
+          "name": "PDF.co"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "chase.aldridge1@gmail.com",
+        "subject": "=Your PDF Summary for {{ $('Webhook').item.json.body.data.rows[0].Title }} is ready",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>WhatsApp Summary</title>\n  <style>\n    :root {\n      --whatsapp-green: #25D366;\n      --whatsapp-light-green: #dcf8c6;\n      --text-dark: #333;\n      --text-light: #777;\n      --border-light: #eaeaea;\n      --shadow: 0 4px 12px rgba(0,0,0,0.08);\n    }\n    \n    body {\n      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;\n      color: var(--text-dark);\n      line-height: 1.6;\n      margin: 0;\n      padding: 0;\n      background-color: #f5f5f5;\n    }\n    \n    .wrapper {\n      max-width: 600px;\n      margin: 0 auto;\n      padding: 20px;\n    }\n    \n    .container {\n      background-color: white;\n      padding: 30px;\n      border-radius: 12px;\n      box-shadow: var(--shadow);\n    }\n    \n    .header {\n      display: flex;\n      align-items: center;\n      margin-bottom: 25px;\n      padding-bottom: 15px;\n      border-bottom: 1px solid var(--border-light);\n    }\n    \n    .logo {\n      width: 40px;\n      height: 40px;\n      margin-right: 15px;\n    }\n    \n    h1 {\n      color: var(--whatsapp-green);\n      font-size: 24px;\n      margin: 0;\n      font-weight: 600;\n    }\n    \n    .chat-name {\n      display: inline-block;\n      background-color: var(--whatsapp-light-green);\n      padding: 4px 10px;\n      border-radius: 15px;\n      font-weight: 600;\n      color: var(--text-dark);\n      margin: 10px 0;\n    }\n    \n    p {\n      margin: 16px 0;\n      font-size: 16px;\n    }\n    \n    .content {\n      background-color: #f9f9f9;\n      border-left: 4px solid var(--whatsapp-green);\n      padding: 15px;\n      margin: 20px 0;\n      border-radius: 0 8px 8px 0;\n    }\n    \n    .button {\n      display: inline-block;\n      background-color: var(--whatsapp-green);\n      color: white;\n      text-decoration: none;\n      padding: 12px 24px;\n      border-radius: 24px;\n      font-weight: 500;\n      margin: 15px 0;\n      text-align: center;\n    }\n    \n    .footer {\n      margin-top: 30px;\n      padding-top: 15px;\n      border-top: 1px solid var(--border-light);\n      font-size: 14px;\n      color: var(--text-light);\n    }\n    \n    .footer-links {\n      margin-top: 10px;\n    }\n    \n    .footer-links a {\n      color: var(--whatsapp-green);\n      text-decoration: none;\n      margin-right: 15px;\n    }\n    \n    @media (max-width: 600px) {\n      .wrapper {\n        padding: 10px;\n      }\n      \n      .container {\n        padding: 20px;\n      }\n    }\n  </style>\n</head>\n<body>\n  <div class=\"wrapper\">\n    <div class=\"container\">\n      <div class=\"header\">\n        <img class=\"logo\" src=\"https://v5.airtableusercontent.com/v3/u/40/40/1745676000000/YOpj84Zf_yS1v1cjgO-d2Q/O0CIaMM6jYdjRtavZc8a9G09zTDQr4D9QGrubnpS1IAj37JP2Qd5ucPhJObEYEDaNzRbG7UprRO7yyIJA2syOXeCezAzQUoeph0teRjrY-g8zL85AMZuzTEX5i1gUOxAZFpLijfNarroyoqFELqTrQ/8MGPfAs-VGHkCuGLxokyXbs9Br9Ya71XAozW8EmMlO8\" alt=\"WhatsApp\" />\n        <h1>WhatsApp Summary</h1>\n      </div>\n      \n      <p>Hello there,</p>\n      \n      <p>Your summary for the chat <span class=\"chat-name\">🔥 General</span> is ready. We've analyzed your recent conversations and compiled all the important information:</p>\n      \n      <div class=\"content\">\n        <strong>What's included:</strong>\n        <ul>\n          <li>Key decisions and action items</li>\n          <li>Important dates and deadlines</li>\n          <li>Shared links and resources</li>\n          <li>Main discussion topics</li>\n        </ul>\n      </div>\n      \n      <p>The complete summary is attached to this email for your convenience.</p>\n      \n      <a href=\"#\" class=\"button\">View Complete Summary</a>\n      \n      <p>Need help or have questions? Reply directly to this email or visit our support center.</p>\n      \n      <p>Best regards,<br>\n      WhatsApp Summary Team</p>\n      \n      <div class=\"footer\">\n        <p>This is an automated message from WhatsApp Summary Service.</p>\n        <div class=\"footer-links\">\n          <a href=\"#\">Privacy Policy</a>\n          <a href=\"#\">Terms of Service</a>\n          <a href=\"#\">Unsubscribe</a>\n        </div>\n      </div>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1960,
+        380
+      ],
+      "id": "f3916d18-f622-4efe-b147-3056bd375625",
+      "name": "Gmail",
+      "webhookId": "7b5e688e-f265-4956-b6ab-0f4209396406",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8te7O4nJADq0HcD6",
+          "name": "Personal Email"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1660,
+        380
+      ],
+      "id": "ac0e05d9-83b4-4df7-95fb-da08acdd02b1",
+      "name": "URL to Binary conversion"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "pyhbpb733tj0dlr",
+        "table": "mp6fared1q1lmyb",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "Title",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldName": "ChatID",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        880,
+        40
+      ],
+      "id": "55da2a42-c5ed-4738-8e44-a2375a9252b4",
+      "name": "NocoDB",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "g5RF47YN1FfW82ZR",
+          "name": "NocoDB Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api13.unipile.com:14371/api/v1/chats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        40
+      ],
+      "id": "76f88895-d850-42ae-8bc3-c7cf0bf8b8d6",
+      "name": "Get Chat IDs From Unipile (1x)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "vLU1XYznnFj44hQ0",
+          "name": "Unipile"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8f6afa95-77ed-4698-94ed-b46dff2b6312",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        100,
+        400
+      ],
+      "id": "5b43efc6-f0dd-409d-9549-dc08651b0416",
+      "name": "Webhook",
+      "webhookId": "8f6afa95-77ed-4698-94ed-b46dff2b6312"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.smallbusinessautomations.xyz",
+            "user-agent": "axios/1.8.4",
+            "content-length": "373",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1",
+            "cf-connecting-ip": "193.46.198.200",
+            "cf-ipcountry": "US",
+            "cf-ray": "9389857a6d1a996a-LAX",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "content-type": "application/json",
+            "x-forwarded-for": "162.158.90.68",
+            "x-forwarded-host": "n8n.smallbusinessautomations.xyz",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "6111575bf2cf",
+            "x-real-ip": "162.158.90.68"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "type": "records.manual.trigger",
+            "id": "ae2ac679-0e14-4586-9ace-758050383060",
+            "data": {
+              "table_id": "mp6fared1q1lmyb",
+              "table_name": "Whats App Chat",
+              "rows": [
+                {
+                  "Id": 2,
+                  "CreatedAt": "2025-04-30 19:36:59+00:00",
+                  "UpdatedAt": null,
+                  "Title": "🔥 General",
+                  "recordId": 2,
+                  "ChatID": "gly8HyGMVcOhWpmzigNGjQ",
+                  "Summarize": {
+                    "type": "webhook",
+                    "label": "Button",
+                    "fk_webhook_id": "hkzrsdsbnxs55v3g"
+                  }
+                }
+              ]
+            }
+          },
+          "webhookUrl": "https://n8n.smallbusinessautomations.xyz/webhook/8f6afa95-77ed-4698-94ed-b46dff2b6312",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Chat IDs From Unipile (1x)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "NocoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getting all messages from a chat": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "PDF.co conversion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF.co conversion": {
+      "main": [
+        [
+          {
+            "node": "URL to Binary conversion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL to Binary conversion": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Chat IDs From Unipile (1x)": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "getting all messages from a chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "96f65008-f1ed-4516-b661-e0ebeacc371b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "696224a686e88ec6c442ca70c78d9445eef41f1e409d04ad6442e010c75ae997"
+  },
+  "id": "uh9GGywZo0RPWEx3",
+  "tags": [
+    {
+      "createdAt": "2025-02-20T20:29:04.840Z",
+      "updatedAt": "2025-02-20T20:29:04.840Z",
+      "id": "hetOEzlg83TmlIiq",
+      "name": "cobuild"
+    }
+  ]
+}
